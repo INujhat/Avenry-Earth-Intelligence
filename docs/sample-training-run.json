@@ -1,0 +1,215 @@
+{
+  "version": "unet-demo-15f671d9-seed42-e35",
+  "architecture": "two-level U-Net (2 input channels, 8 base channels)",
+  "seed": 42,
+  "epochs": 35,
+  "normalization": {
+    "sensor": "Sentinel-1 GRD dB",
+    "bands": [
+      "VV",
+      "VH"
+    ],
+    "clip_db": [
+      -30,
+      5
+    ]
+  },
+  "dataset_version": "sen1floods11-github-b9e460dabe70",
+  "manifest_sha256": "15f671d9de50af248dec4f2ed2a4e96f1d9c5e35988b4fad9dbe15272cc88c5d",
+  "training_scene_ids": [
+    "Spain_7370579"
+  ],
+  "evaluation_scope": "in_sample_demo",
+  "warning": "Trained and evaluated on the same scene. Not a generalization benchmark.",
+  "history": [
+    {
+      "epoch": 1,
+      "train_loss": 0.6600455343723297,
+      "validation_loss": null
+    },
+    {
+      "epoch": 2,
+      "train_loss": 0.630511000752449,
+      "validation_loss": null
+    },
+    {
+      "epoch": 3,
+      "train_loss": 0.5669808834791183,
+      "validation_loss": null
+    },
+    {
+      "epoch": 4,
+      "train_loss": 0.5225975662469864,
+      "validation_loss": null
+    },
+    {
+      "epoch": 5,
+      "train_loss": 0.49055179953575134,
+      "validation_loss": null
+    },
+    {
+      "epoch": 6,
+      "train_loss": 0.4668446555733681,
+      "validation_loss": null
+    },
+    {
+      "epoch": 7,
+      "train_loss": 0.42633672803640366,
+      "validation_loss": null
+    },
+    {
+      "epoch": 8,
+      "train_loss": 0.39585142582654953,
+      "validation_loss": null
+    },
+    {
+      "epoch": 9,
+      "train_loss": 0.37540682405233383,
+      "validation_loss": null
+    },
+    {
+      "epoch": 10,
+      "train_loss": 0.3626517429947853,
+      "validation_loss": null
+    },
+    {
+      "epoch": 11,
+      "train_loss": 0.34308335930109024,
+      "validation_loss": null
+    },
+    {
+      "epoch": 12,
+      "train_loss": 0.32892945408821106,
+      "validation_loss": null
+    },
+    {
+      "epoch": 13,
+      "train_loss": 0.3149345889687538,
+      "validation_loss": null
+    },
+    {
+      "epoch": 14,
+      "train_loss": 0.31280409917235374,
+      "validation_loss": null
+    },
+    {
+      "epoch": 15,
+      "train_loss": 0.3090873956680298,
+      "validation_loss": null
+    },
+    {
+      "epoch": 16,
+      "train_loss": 0.3069808632135391,
+      "validation_loss": null
+    },
+    {
+      "epoch": 17,
+      "train_loss": 0.29332317039370537,
+      "validation_loss": null
+    },
+    {
+      "epoch": 18,
+      "train_loss": 0.29198744520545006,
+      "validation_loss": null
+    },
+    {
+      "epoch": 19,
+      "train_loss": 0.2901866100728512,
+      "validation_loss": null
+    },
+    {
+      "epoch": 20,
+      "train_loss": 0.28882918134331703,
+      "validation_loss": null
+    },
+    {
+      "epoch": 21,
+      "train_loss": 0.2836020290851593,
+      "validation_loss": null
+    },
+    {
+      "epoch": 22,
+      "train_loss": 0.28756553307175636,
+      "validation_loss": null
+    },
+    {
+      "epoch": 23,
+      "train_loss": 0.2912575975060463,
+      "validation_loss": null
+    },
+    {
+      "epoch": 24,
+      "train_loss": 0.2915769889950752,
+      "validation_loss": null
+    },
+    {
+      "epoch": 25,
+      "train_loss": 0.29821738228201866,
+      "validation_loss": null
+    },
+    {
+      "epoch": 26,
+      "train_loss": 0.28994904085993767,
+      "validation_loss": null
+    },
+    {
+      "epoch": 27,
+      "train_loss": 0.29222438856959343,
+      "validation_loss": null
+    },
+    {
+      "epoch": 28,
+      "train_loss": 0.2912166938185692,
+      "validation_loss": null
+    },
+    {
+      "epoch": 29,
+      "train_loss": 0.28707220405340195,
+      "validation_loss": null
+    },
+    {
+      "epoch": 30,
+      "train_loss": 0.28342193365097046,
+      "validation_loss": null
+    },
+    {
+      "epoch": 31,
+      "train_loss": 0.28489629179239273,
+      "validation_loss": null
+    },
+    {
+      "epoch": 32,
+      "train_loss": 0.28129784390330315,
+      "validation_loss": null
+    },
+    {
+      "epoch": 33,
+      "train_loss": 0.2777610421180725,
+      "validation_loss": null
+    },
+    {
+      "epoch": 34,
+      "train_loss": 0.2758544161915779,
+      "validation_loss": null
+    },
+    {
+      "epoch": 35,
+      "train_loss": 0.2780943810939789,
+      "validation_loss": null
+    }
+  ],
+  "evaluation": [
+    {
+      "scene_id": "Spain_7370579",
+      "iou": 0.6448041517360682,
+      "precision": 0.8272800773633063,
+      "recall": 0.7451131577068608,
+      "dice": 0.7840497618582568,
+      "true_positive": 52184,
+      "false_positive": 10895,
+      "false_negative": 17851,
+      "valid_pixels": 262045
+    }
+  ],
+  "checkpoint_sha256": "2275075ecb37ca72f6a78dc09c287a01938bacd0c4cbd3ee7f98a50e6f73057b"
+}

@@ -1,0 +1,244 @@
+{
+  "version": "unet-baseline-7e47e7f5-seed42-e35",
+  "architecture": "two-level U-Net (2 input channels, 8 base channels)",
+  "seed": 42,
+  "epochs": 35,
+  "normalization": {
+    "sensor": "Sentinel-1 GRD dB",
+    "bands": [
+      "VV",
+      "VH"
+    ],
+    "clip_db": [
+      -30,
+      5
+    ]
+  },
+  "dataset_version": "sen1floods11-v1.1-subset-a83b1604827d",
+  "manifest_sha256": "7e47e7f51e296bde959da1518cc3624ab0af4ea14f225bc9e00ccc49323dd8b7",
+  "training_scene_ids": [
+    "Ghana_103272",
+    "Ghana_1033830",
+    "India_1017769",
+    "India_1018317"
+  ],
+  "training_event_ids": [
+    "Ghana",
+    "India"
+  ],
+  "validation_scene_ids": [
+    "Mekong_1111068",
+    "Mekong_1149855"
+  ],
+  "validation_event_ids": [
+    "Mekong"
+  ],
+  "test_scene_ids": [
+    "Nigeria_1095404",
+    "Nigeria_143329"
+  ],
+  "evaluation_scope": "held_out_events",
+  "warning": "Small event-disjoint subset; not a full-dataset benchmark.",
+  "history": [
+    {
+      "epoch": 1,
+      "train_loss": 0.6577179916203022,
+      "validation_loss": 0.48152729868888855
+    },
+    {
+      "epoch": 2,
+      "train_loss": 0.495246360078454,
+      "validation_loss": 0.2888466864824295
+    },
+    {
+      "epoch": 3,
+      "train_loss": 0.33989714458584785,
+      "validation_loss": 0.13545330241322517
+    },
+    {
+      "epoch": 4,
+      "train_loss": 0.3094370416365564,
+      "validation_loss": 0.1457844115793705
+    },
+    {
+      "epoch": 5,
+      "train_loss": 0.3742549968883395,
+      "validation_loss": 0.21491198986768723
+    },
+    {
+      "epoch": 6,
+      "train_loss": 0.3344249539077282,
+      "validation_loss": 0.21179357916116714
+    },
+    {
+      "epoch": 7,
+      "train_loss": 0.31956050731241703,
+      "validation_loss": 0.20400706678628922
+    },
+    {
+      "epoch": 8,
+      "train_loss": 0.3253643219359219,
+      "validation_loss": 0.4808654487133026
+    },
+    {
+      "epoch": 9,
+      "train_loss": 0.2915902375243604,
+      "validation_loss": 0.1315820850431919
+    },
+    {
+      "epoch": 10,
+      "train_loss": 0.33042799844406545,
+      "validation_loss": 0.3235756680369377
+    },
+    {
+      "epoch": 11,
+      "train_loss": 0.3129470460116863,
+      "validation_loss": 0.1760878562927246
+    },
+    {
+      "epoch": 12,
+      "train_loss": 0.292383398860693,
+      "validation_loss": 0.13214407116174698
+    },
+    {
+      "epoch": 13,
+      "train_loss": 0.3291491970885545,
+      "validation_loss": 0.14253763109445572
+    },
+    {
+      "epoch": 14,
+      "train_loss": 0.31141172256320715,
+      "validation_loss": 0.1544126719236374
+    },
+    {
+      "epoch": 15,
+      "train_loss": 0.3354112165980041,
+      "validation_loss": 0.1509137824177742
+    },
+    {
+      "epoch": 16,
+      "train_loss": 0.2955115847289562,
+      "validation_loss": 0.2218649461865425
+    },
+    {
+      "epoch": 17,
+      "train_loss": 0.2894766703248024,
+      "validation_loss": 0.13743601366877556
+    },
+    {
+      "epoch": 18,
+      "train_loss": 0.27182635478675365,
+      "validation_loss": 0.3022470772266388
+    },
+    {
+      "epoch": 19,
+      "train_loss": 0.26644936110824347,
+      "validation_loss": 0.14951183646917343
+    },
+    {
+      "epoch": 20,
+      "train_loss": 0.23949762620031834,
+      "validation_loss": 0.15661956369876862
+    },
+    {
+      "epoch": 21,
+      "train_loss": 0.25961003731936216,
+      "validation_loss": 0.11033160984516144
+    },
+    {
+      "epoch": 22,
+      "train_loss": 0.2961065606214106,
+      "validation_loss": 0.13796468079090118
+    },
+    {
+      "epoch": 23,
+      "train_loss": 0.2626388007774949,
+      "validation_loss": 0.18021290749311447
+    },
+    {
+      "epoch": 24,
+      "train_loss": 0.26918859826400876,
+      "validation_loss": 0.22172382473945618
+    },
+    {
+      "epoch": 25,
+      "train_loss": 0.2821406831499189,
+      "validation_loss": 0.21230224519968033
+    },
+    {
+      "epoch": 26,
+      "train_loss": 0.2551198326982558,
+      "validation_loss": 0.1254025250673294
+    },
+    {
+      "epoch": 27,
+      "train_loss": 0.24908226868137717,
+      "validation_loss": 0.10762327536940575
+    },
+    {
+      "epoch": 28,
+      "train_loss": 0.22002452472224832,
+      "validation_loss": 0.11463945731520653
+    },
+    {
+      "epoch": 29,
+      "train_loss": 0.23738233698531985,
+      "validation_loss": 0.1071280837059021
+    },
+    {
+      "epoch": 30,
+      "train_loss": 0.25239085545763373,
+      "validation_loss": 0.12110904976725578
+    },
+    {
+      "epoch": 31,
+      "train_loss": 0.22266735881567,
+      "validation_loss": 0.110923632979393
+    },
+    {
+      "epoch": 32,
+      "train_loss": 0.2246098918840289,
+      "validation_loss": 0.11657120287418365
+    },
+    {
+      "epoch": 33,
+      "train_loss": 0.2472783592529595,
+      "validation_loss": 0.2101416364312172
+    },
+    {
+      "epoch": 34,
+      "train_loss": 0.23099097108934075,
+      "validation_loss": 0.11254709959030151
+    },
+    {
+      "epoch": 35,
+      "train_loss": 0.21036250819452107,
+      "validation_loss": 0.12723184376955032
+    }
+  ],
+  "evaluation": [
+    {
+      "scene_id": "Nigeria_1095404",
+      "iou": 0.47272766822922896,
+      "precision": 0.4866317345156523,
+      "recall": 0.9430040571912087,
+      "dice": 0.6419756733403739,
+      "true_positive": 43464,
+      "false_positive": 45852,
+      "false_negative": 2627,
+      "valid_pixels": 252283
+    },
+    {
+      "scene_id": "Nigeria_143329",
+      "iou": 0.07125721901377166,
+      "precision": 0.07517457936917092,
+      "recall": 0.5776017284839755,
+      "dice": 0.1330347515965829,
+      "true_positive": 1604,
+      "false_positive": 19733,
+      "false_negative": 1173,
+      "valid_pixels": 249500
+    }
+  ],
+  "checkpoint_sha256": "97b0c2c13dde62693b3eed9de1b820a91467c0ccb2d0d5f4e5d8d8b66a5417b7"
+}

@@ -218,3 +218,19 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Local datasets, model outputs and secrets
+/data/raw/
+/data/processed/
+/artifacts/
+.env.*
+!.env.example
+/data/results/
+/data/*.db
+/data/*.db-*
+/data/manifest.json
+/frontend/node_modules/
+/frontend/dist/
+# Keep third-party imagery/derived artifacts private pending source license rights.
+/docs/screenshots/
+/data/*manifest.json

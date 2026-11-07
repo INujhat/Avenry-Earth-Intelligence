@@ -1,0 +1,17 @@
+.git
+.venv
+**/__pycache__
+**/.pytest_cache
+**/.ruff_cache
+frontend/node_modules
+frontend/dist
+data/raw
+data/processed
+data/results
+data/*.db*
+data/*manifest.json
+artifacts
+.env
+.env.*
+!*.example
+docs/screenshots

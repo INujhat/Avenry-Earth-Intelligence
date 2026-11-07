@@ -1,0 +1,25 @@
+{
+  "revision": "b9e460dabe70230111a3c3d36cd0c5ce03606ee9",
+  "files": [
+    {
+      "path": "data/raw/sample/Labels/Spain_7370579_LabelHand.tif",
+      "url": "https://raw.githubusercontent.com/cloudtostreet/Sen1Floods11/b9e460dabe70230111a3c3d36cd0c5ce03606ee9/sample/Labels/Spain_7370579_LabelHand.tif",
+      "sha256": "b81224e01540b262faffd82cb42762c3c77df2ba084a5fb82d49bae421dd12d4"
+    },
+    {
+      "path": "data/raw/sample/S1/Spain_7370579_S1Hand.tif",
+      "url": "https://raw.githubusercontent.com/cloudtostreet/Sen1Floods11/b9e460dabe70230111a3c3d36cd0c5ce03606ee9/sample/S1/Spain_7370579_S1Hand.tif",
+      "sha256": "6c24bf791372da5e93450195eac8d676a7ef917884dfb479dafe4a565543b19a"
+    },
+    {
+      "path": "data/raw/sample/S2/Spain_7370579_S2Hand.tif",
+      "url": "https://raw.githubusercontent.com/cloudtostreet/Sen1Floods11/b9e460dabe70230111a3c3d36cd0c5ce03606ee9/sample/S2/Spain_7370579_S2Hand.tif",
+      "sha256": "16e997e6a7159fa11160faf00591da763eb37ac82faf806f7fe733991944a048"
+    },
+    {
+      "path": "data/raw/events.geojson",
+      "url": "https://raw.githubusercontent.com/cloudtostreet/Sen1Floods11/b9e460dabe70230111a3c3d36cd0c5ce03606ee9/Sen1Floods11_Metadata.geojson",
+      "sha256": "29790ad85135d03ebc73af1e582907901e43c3aa411b6f571a8a32ac7f1db536"
+    }
+  ]
+}
