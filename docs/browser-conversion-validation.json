@@ -1,0 +1,42 @@
+[
+  {
+    "scene_id": "Nigeria_1095404",
+    "max_logit_difference": 3.814697265625e-06,
+    "threshold_disagreements": 0
+  },
+  {
+    "scene_id": "Nigeria_143329",
+    "max_logit_difference": 4.410743713378906e-06,
+    "threshold_disagreements": 0
+  },
+  {
+    "scene_id": "Mekong_1111068",
+    "max_logit_difference": 2.86102294921875e-06,
+    "threshold_disagreements": 0
+  },
+  {
+    "scene_id": "Mekong_1149855",
+    "max_logit_difference": 2.1457672119140625e-06,
+    "threshold_disagreements": 0
+  },
+  {
+    "scene_id": "Ghana_103272",
+    "max_logit_difference": 3.337860107421875e-06,
+    "threshold_disagreements": 0
+  },
+  {
+    "scene_id": "Ghana_1033830",
+    "max_logit_difference": 2.384185791015625e-06,
+    "threshold_disagreements": 0
+  },
+  {
+    "scene_id": "India_1017769",
+    "max_logit_difference": 1.9073486328125e-06,
+    "threshold_disagreements": 0
+  },
+  {
+    "scene_id": "India_1018317",
+    "max_logit_difference": 1.9073486328125e-06,
+    "threshold_disagreements": 0
+  }
+]

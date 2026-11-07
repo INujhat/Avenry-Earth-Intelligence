@@ -234,3 +234,5 @@ __marimo__/
 # Keep third-party imagery/derived artifacts private pending source license rights.
 /docs/screenshots/
 /data/*manifest.json
+/frontend/browser-dist/
+!/frontend/.env.browser

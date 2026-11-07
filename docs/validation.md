@@ -1,5 +1,16 @@
 # Validation evidence
 
+## Free browser version
+
+The user selected free static hosting. Browser ONNX inference passed with no
+Python API calls, no JavaScript errors, working GeoTIFF/JSON downloads, retained
+IndexedDB history after reload and no mobile horizontal overflow. Exported ONNX
+matched PyTorch decisions on all eight scenes. An actual browser-downloaded mask,
+metrics, geodesic area, CRS, affine transform and nodata matched Python exactly.
+The original 15 backend/deployment tests still passed. Upload of the private
+hosted application is pending access to Hugging Face's binary storage hostname;
+no hosted end-to-end readiness claim is made. See `browser-hosting.md`.
+
 ## Current update
 
 The data domains are now enabled. Eight real event-disjoint scenes downloaded

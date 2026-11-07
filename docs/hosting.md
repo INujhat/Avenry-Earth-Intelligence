@@ -10,7 +10,7 @@ hosted website exists yet. The provider's exact response was:
 The earlier statement that this Docker deployment could run on a free account
 was incorrect. A paid subscription must not be enabled automatically. A static
 hosting alternative would require moving model inference into the browser; it
-cannot run this FastAPI backend unchanged. The user has been asked to choose.
+cannot run this FastAPI backend unchanged. The user chose free browser inference; see `browser-hosting.md` for the implementation and current upload-access blocker.
 The deployment source and port-7860 checks are prepared; 15 tests passed.
 
 ## Secure access required

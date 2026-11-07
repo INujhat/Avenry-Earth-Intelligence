@@ -1,0 +1,4 @@
+# Operator-side tools for the free browser-inference deployment.
+onnx==1.17.0
+onnxruntime==1.20.1
+tifffile==2026.10.15

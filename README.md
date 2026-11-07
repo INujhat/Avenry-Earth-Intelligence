@@ -14,6 +14,18 @@ for testing. NASA scene search has also succeeded; protected HLS downloads still
 require your Earthdata credentials. This is a research prototype, not a verified
 flood warning service. No permanently public hosted deployment exists.
 
+## Free hosted browser mode
+
+A browser-only version is implemented so the website does not require paid Python
+hosting. It runs the real trained U-Net with ONNX Runtime WebAssembly, saves history
+on the current device, and exports georeferenced masks. The FastAPI version remains
+available for local development and Codespaces.
+
+The private static Space has been created, but the application upload is pending
+cloud access to Hugging Face's binary storage domain. It is **not ready to use yet**.
+See [browser deployment and validation](docs/browser-hosting.md). Do not confuse
+the provider's starter page with the completed product.
+
 ## What you can do
 
 - Browse the verified Sen1Floods11 Spain scene and acquisition metadata.
