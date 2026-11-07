@@ -1,0 +1,80 @@
+name: Verify real satellite and AI pipeline
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'ml/**'
+      - 'scripts/prepare_subset.py'
+      - 'scripts/export_browser.py'
+      - 'frontend/src/browserApi.ts'
+      - '.github/workflows/verify-real-pipeline.yml'
+permissions:
+  contents: read
+jobs:
+  validate-real-inference:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install geospatial, ML, and ONNX dependencies
+        run: |
+          python -m pip install -r requirements.txt -r requirements-cpu.txt -r requirements-browser-export.txt
+          python -m pip check
+      - name: Download bounded official source scenes
+        run: |
+          python -m scripts.prepare_subset
+          cp data/subset-manifest.json data/manifest.json
+      - name: Train actual event-disjoint U-Net checkpoint
+        run: python -m ml.train --epochs 35
+      - name: Build browser frontend
+        run: |
+          npm ci --prefix frontend
+          npm run build:browser --prefix frontend
+      - name: Export real model and georeferenced scenes
+        run: python -m scripts.export_browser --output frontend/browser-dist
+      - name: Verify complete inference asset manifest and integrity
+        run: |
+          python - <<'PY'
+          import hashlib, json
+          from pathlib import Path
+          root = Path('frontend/browser-dist')
+          c = json.loads((root/'data/catalog.json').read_text())
+          assert len(c['scenes']) == 8, 'Expected eight real scenes'
+          assert c['model']['evaluation_scope'] == 'held_out_events'
+          files = [(c['onnx']['path'], c['onnx']['sha256'])]
+          files += [(x['path'], x['sha256']) for x in c['runtime']['chunks']]
+          for s in c['scenes']:
+              files += [(s['browser_assets'][k], v) for k, v in s['checksums'].items()]
+              for url in s['assets'].values():
+                  assert (root/url.removeprefix('./')).is_file(), url
+          for url, digest in files:
+              path = root/url.removeprefix('./')
+              assert path.is_file(), f'Missing {path}'
+              assert hashlib.sha256(path.read_bytes()).hexdigest() == digest, path
+          print(f'Validated {len(c["scenes"])} real scenes and {len(files)} checksummed inference assets')
+          PY
+      - name: Verify model conversion checks
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          checks = json.loads(Path('docs/browser-conversion-validation.json').read_text())
+          assert len(checks) == 8
+          assert all(r['threshold_disagreements'] == 0 for r in checks)
+          print('All eight ONNX outputs agree with PyTorch water masks')
+          PY
+      - name: Licensing safety boundary
+        run: |
+          echo 'Verified locally on CI only.'
+          echo 'DO NOT upload dataset, trained checkpoint, or generated browser-dist to public hosting.'
+          echo 'Dataset STAC declares proprietary terms; obtain redistribution rights first.'
