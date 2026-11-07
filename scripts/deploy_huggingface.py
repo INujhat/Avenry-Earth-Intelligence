@@ -53,8 +53,8 @@ startup_duration_timeout: 1h
 
 Real satellite surface-water research application: React, FastAPI, MapLibre and
 CPU PyTorch. First startup fetches eight real scenes and trains a small U-Net.
-It can take several minutes. Free CPU hosting may sleep and local storage is
-not guaranteed to persist through rebuilds/restarts. No paid hardware is requested.
+It can take several minutes. CPU hosting may sleep and local storage is
+not guaranteed to persist through rebuilds/restarts. CPU-basic is requested; Hugging Face currently requires PRO for Docker hosting.
 
 The initial Space is private. Sen1Floods11 STAC declares proprietary source terms;
 obtain applicable rights before publicly redistributing imagery or learned artifacts.
@@ -71,6 +71,7 @@ def deploy(username, space):
     if not token:
         raise SystemExit("HF_TOKEN is missing. Add it securely in environment settings, not in chat.")
     from huggingface_hub import HfApi
+    from huggingface_hub.errors import HfHubHTTPError
 
     api = HfApi(token=token)
     identity = api.whoami()
@@ -80,14 +81,22 @@ def deploy(username, space):
         prepare(Path(folder))
         repo_id = f"{username}/{space}"
         # Fail on an existing name rather than overwrite an unknown Space.
-        api.create_repo(
-            repo_id,
-            repo_type="space",
-            space_sdk="docker",
-            private=True,
-            exist_ok=False,
-            space_hardware="cpu-basic",
-        )
+        try:
+            api.create_repo(
+                repo_id,
+                repo_type="space",
+                space_sdk="docker",
+                private=True,
+                exist_ok=False,
+                space_hardware="cpu-basic",
+            )
+        except HfHubHTTPError as exc:
+            if exc.response is not None and exc.response.status_code == 402:
+                raise SystemExit(
+                    "Hugging Face requires a PRO subscription for this Docker Space. "
+                    "No Space was created. Choose a hosting plan or a static browser-inference alternative."
+                ) from None
+            raise
         api.upload_folder(
             folder_path=folder,
             repo_id=repo_id,

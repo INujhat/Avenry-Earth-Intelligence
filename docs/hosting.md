@@ -1,7 +1,17 @@
 # Hugging Face deployment for NujAMred
 
-Status: source package prepared; 15 tests pass; local port-7860 startup and real
-inference checked. No Space has been created and no hosted website validated yet.
+Status: `HF_TOKEN` was successfully validated for `NujAMred`. The Docker
+Space creation request was rejected with HTTP 402. No Space was created and no
+hosted website exists yet. The provider's exact response was:
+
+> Static Spaces are free for everyone, but hosting Gradio and Docker Spaces on
+> free cpu-basic requires a PRO subscription.
+
+The earlier statement that this Docker deployment could run on a free account
+was incorrect. A paid subscription must not be enabled automatically. A static
+hosting alternative would require moving model inference into the browser; it
+cannot run this FastAPI backend unchanged. The user has been asked to choose.
+The deployment source and port-7860 checks are prepared; 15 tests passed.
 
 ## Secure access required
 
@@ -18,8 +28,8 @@ A draft save alone does not apply network changes or deploy an application.
 .venv/bin/python -m scripts.deploy_huggingface --username NujAMred
 ```
 
-The script verifies the token's account name before making changes and creates
-only a free `cpu-basic` Docker Space. It uploads a source-only package; imagery,
+The script verifies the token's account name before making changes and requests
+only a `cpu-basic` Docker Space (the provider now requires PRO even for this tier). It uploads a source-only package; imagery,
 weights, local databases and credentials are excluded. It refuses to overwrite
 an existing Space. If upload fails after creation, inspect the newly created
 Space before retrying; do not repeatedly create repositories.
@@ -31,7 +41,7 @@ an emergency warning service or a validated flood-change detector.
 
 The Space listens on port 7860, serves the React website and API together, and
 prepares the bounded real dataset and CPU model on first startup. Its initial
-build/start may take several minutes. Free hosting can sleep and ephemeral data
+build/start may take several minutes. Hosting can sleep and ephemeral data
 or analysis history can disappear on rebuild/restart. No paid hardware or storage
 is requested. Model predictions and metrics remain research outputs.
 
