@@ -1,0 +1,2 @@
+# Optional operator-side deployment tool; not required in the application image.
+huggingface-hub==0.36.0
