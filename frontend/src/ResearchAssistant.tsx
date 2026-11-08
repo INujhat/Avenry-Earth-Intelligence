@@ -17,7 +17,7 @@ function answer(question:string):string{
 }
 export default function ResearchAssistant(){
  const [open,setOpen]=useState(false),[draft,setDraft]=useState(''),[messages,setMessages]=useState<Message[]>([{role:'assistant',text:'Welcome to Avenry. I can explain the satellite data, interactive map, AI model, and what is currently available.'}]);
- function send(value:string){const q=value.trim().slice(0,500);if(!q)return;setMessages(old=>[...old,{role:'user',text:q},{role:'assistant',text:answer(q)}].slice(-24));setDraft('');}
+ function send(value:string){const q=value.trim().slice(0,500);if(!q)return;setMessages(old=>[...old,{role:'user' as const,text:q},{role:'assistant' as const,text:answer(q)}].slice(-24));setDraft('');}
  return <div style={{position:'fixed',right:22,bottom:20,zIndex:60}}>
   {open&&<section aria-label="Avenry research assistant" style={{width:'min(365px,calc(100vw - 36px))',height:480,maxHeight:'75vh',background:'#fff',border:'1px solid #d7e2d9',borderRadius:14,boxShadow:'0 14px 50px #193b292b',display:'flex',flexDirection:'column',marginBottom:12,overflow:'hidden'}}>
    <header style={{background:'#265d45',color:'white',padding:'14px 16px',display:'flex',justifyContent:'space-between',alignItems:'center'}}><div><strong>Avenry Research Guide</strong><div style={{fontSize:11,opacity:.85}}>Local knowledge assistant · No external AI API</div></div><button onClick={()=>setOpen(false)} aria-label="Close assistant" style={{background:'transparent',color:'white'}}><X size={19}/></button></header>
