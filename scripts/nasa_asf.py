@@ -53,10 +53,18 @@ def download(feature, destination, token):
     target = destination / (scene + ".zip")
     if target.exists():
         raise FileExistsError(f"Already downloaded: {target}")
+    class SafeRedirect(urllib.request.HTTPRedirectHandler):
+        def redirect_request(self, req, fp, code, msg, headers, newurl):
+            parsed_target = urllib.parse.urlparse(newurl)
+            if parsed_target.scheme != "https" or parsed_target.hostname not in ALLOWED_HOSTS:
+                raise ValueError("Refusing to redirect Earthdata credentials outside approved NASA ASF hosts")
+            return super().redirect_request(req, fp, code, msg, headers, newurl)
+
+    opener = urllib.request.build_opener(SafeRedirect)
     request = urllib.request.Request(url, headers={"Authorization": "Bearer " + token, "User-Agent": "Avenry-Earth-Intelligence/0.2"})
     temporary = target.with_suffix(".partial")
     try:
-        with urllib.request.urlopen(request, timeout=120) as response, temporary.open("wb") as out:
+        with opener.open(request, timeout=120) as response, temporary.open("wb") as out:
             if response.geturl().startswith("http://"):
                 raise ValueError("Download was redirected to an insecure URL")
             import shutil
