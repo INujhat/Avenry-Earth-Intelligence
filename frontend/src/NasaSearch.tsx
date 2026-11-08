@@ -28,6 +28,7 @@ export default function NasaSearch(){
    const data=await response.json() as SearchResult;
    if(!Array.isArray(data.features))throw Error('NASA returned an unexpected scene format.');
    setItems(data.features);
+   try{const saved={region:selected.name,latitude:selected.lat,longitude:selected.lon,start,end,updated_at:new Date().toISOString(),scenes:data.features.map((f,i)=>{const p=f.properties||{};return {id:String(p.sceneName||p.fileID||p.granuleName||'Sentinel-1 scene '+(i+1)),date:String(p.startTime||p.stopTime||''),polarization:String(p.polarization||'Unknown'),orbit:String(p.flightDirection||'Unknown'),platform:String(p.platform||'Sentinel-1'),url:typeof p.url==='string'&&p.url.startsWith('https://')?p.url:null};})};localStorage.setItem('avenry-nasa-observations-v1',JSON.stringify(saved));window.dispatchEvent(new Event('avenry:observations-updated'));}catch{/* Storage is optional; NASA search results remain visible here. */}
   }catch(e){setError((e instanceof Error?e.message:'NASA search unavailable')+'. You can continue in NASA ASF Vertex using the link below.');}
   finally{setBusy(false);}
  }
