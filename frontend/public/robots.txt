@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://avenry-earth-intelligence.vercel.app/sitemap.xml
