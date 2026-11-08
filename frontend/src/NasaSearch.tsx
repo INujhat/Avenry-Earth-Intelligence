@@ -5,7 +5,6 @@ import {useState} from 'react';
 type Feature={properties?:Record<string,unknown>;geometry?:unknown};
 type SearchResult={features?:Feature[]};
 const regions=[{name:'Sylhet, Bangladesh',lat:24.89,lon:91.87},{name:'Houston, Texas',lat:29.76,lon:-95.37},{name:'New Orleans, Louisiana',lat:29.95,lon:-90.07},{name:'Kerala, India',lat:10.5,lon:76.5}];
-function iso(d:Date){return d.toISOString().slice(0,10);}
 export default function NasaSearch(){
  const [region,setRegion]=useState(0),[customLat,setCustomLat]=useState(''),[customLon,setCustomLon]=useState(''),[customName,setCustomName]=useState('My location'),[start,setStart]=useState('2022-06-01'),[end,setEnd]=useState('2022-06-30');
  const [items,setItems]=useState<Feature[]>([]),[busy,setBusy]=useState(false),[error,setError]=useState(''),[searched,setSearched]=useState(false);
@@ -23,13 +22,13 @@ export default function NasaSearch(){
    if(!validPlace)throw Error('Enter valid latitude (−90 to 90) and longitude (−180 to 180) for your location.');
    if(!start||!end||start>end)throw Error('Choose a valid start and end date.');
    const params=new URLSearchParams({platform:'Sentinel-1',processingLevel:'GRD_HD',intersectsWith:wkt,start,end,output:'geojson',maxResults:'25'});
-   const response=await fetch('https://api.daac.asf.alaska.edu/services/search/param?'+params.toString(),{headers:{Accept:'application/geo+json,application/json'}});
+   const controller=new AbortController();const timeout=setTimeout(()=>controller.abort(),25000);let response:Response;try{response=await fetch('https://api.daac.asf.alaska.edu/services/search/param?'+params.toString(),{headers:{Accept:'application/geo+json,application/json'},signal:controller.signal});}finally{clearTimeout(timeout);}
    if(!response.ok)throw Error('NASA search returned HTTP '+response.status);
    const data=await response.json() as SearchResult;
    if(!Array.isArray(data.features))throw Error('NASA returned an unexpected scene format.');
    setItems(data.features);
    try{const saved={region:selected.name,latitude:selected.lat,longitude:selected.lon,start,end,updated_at:new Date().toISOString(),scenes:data.features.map((f,i)=>{const p=f.properties||{};return {id:String(p.sceneName||p.fileID||p.granuleName||'Sentinel-1 scene '+(i+1)),date:String(p.startTime||p.stopTime||''),polarization:String(p.polarization||'Unknown'),orbit:String(p.flightDirection||'Unknown'),platform:String(p.platform||'Sentinel-1'),url:typeof p.url==='string'&&p.url.startsWith('https://')?p.url:null};})};localStorage.setItem('avenry-nasa-observations-v1',JSON.stringify(saved));window.dispatchEvent(new Event('avenry:observations-updated'));}catch{/* Storage is optional; NASA search results remain visible here. */}
-  }catch(e){setError((e instanceof Error?e.message:'NASA search unavailable')+'. You can continue in NASA ASF Vertex using the link below.');}
+  }catch(e){setError((e instanceof Error?e.message:'NASA search unavailable')+'. If the browser blocks NASA requests or the service is slow, use the NASA ASF Vertex link below.');}
   finally{setBusy(false);}
  }
  return <section style={{background:'#fff',border:'1px solid #dfe7df',borderRadius:10,padding:22,marginBottom:28}}>
@@ -43,6 +42,8 @@ export default function NasaSearch(){
    <label style={{display:'grid',gap:6,fontSize:11}}>To<input type="date" value={end} onChange={e=>setEnd(e.target.value)} style={{padding:9,border:'1px solid #dfe7df',borderRadius:5}}/></label>
    <button className="button primary" onClick={search} disabled={busy||!validPlace}>{busy?'Searching NASA…':'Search NASA imagery'}</button>
   </div>
+  <div role="status" aria-live="polite" style={{padding:16,marginTop:16,background:busy?'#eaf2ed':error?'#fff2eb':'#f1f6f0',border:'1px solid #dce9dc',borderRadius:8,fontSize:13,lineHeight:1.7}}>{busy?'Searching NASA ASF for real satellite acquisition records…':error?'Search failed: '+error:searched?items.length?`${items.length} real NASA satellite record(s) found. See the results directly below the map. These are acquisition records, not flood predictions.`:'NASA returned no records for this date range. Try a longer date range or a different location.':'Choose a region and date range, then search NASA. The map below is a geographic basemap; actual satellite records appear after a successful search.'}</div>
+  {items.length>0&&<div style={{background:'#fff',border:'1px solid #dce9dc',borderRadius:8,padding:14,marginTop:12}}><strong style={{fontSize:13}}>NASA search results ({items.length})</strong><p style={{fontSize:11,color:'#66786d',marginTop:6}}>The returned scenes are listed in Observations and below the map. Satellite discovery does not activate the separate AI water-analysis model.</p></div>}
   <div style={{marginTop:18,marginBottom:14}}>{validPlace?<Suspense fallback={<div style={{padding:30,background:'#edf2ed'}}>Loading interactive location map…</div>}><LocationExplorer place={selected} footprints={footprints}/></Suspense>:<div role="status" style={{padding:24,background:'#f4f7f4',borderRadius:8}}>Enter valid coordinates to display your location on the map.</div>}<p style={{fontSize:11,color:'#6f8075',marginTop:7}}>Live geographic basemap by OpenStreetMap. Search NASA to display returned satellite scene footprints; the basemap itself is not Sentinel-1 imagery.</p></div>
   <div style={{display:'flex',gap:14,flexWrap:'wrap',fontSize:12,margin:'10px 0 14px'}}><a href={mapLink} target="_blank" rel="noopener noreferrer" style={{color:'#265d45',textDecoration:'underline'}}>Open full map ↗</a><button type="button" onClick={()=>navigator.clipboard?.writeText(mapLink).catch(()=>{})} style={{color:'#265d45',textDecoration:'underline',background:'none',padding:0}}>Copy location map link</button></div>
   <div style={{background:'#f1f6f0',border:'1px solid #dce9dc',borderRadius:9,padding:15,marginBottom:12}}><strong style={{fontSize:13}}>How can this help in everyday life?</strong><p style={{fontSize:12,lineHeight:1.7,marginTop:7}}>Explore your neighborhood or a place your family cares about, inspect the surrounding landscape, and discover when radar satellite observations were collected. Useful for students, travelers, community researchers, and anyone curious about changes near rivers or coastlines. A satellite footprint is not a flood alert or a statement that a location is safe.</p></div>
