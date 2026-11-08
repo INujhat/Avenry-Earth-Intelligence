@@ -52,3 +52,4 @@ export default function FloodConditions(){
    <a href="https://www.ncdc.noaa.gov/stormevents/" target="_blank" rel="noreferrer" style={{fontSize:12,color:'#265d45',textDecoration:'underline',display:'inline-block',marginTop:12}}>Explore NOAA Storm Events Database ↗</a>
   </div>
  </section>;
+}
