@@ -14,7 +14,7 @@ export default function LocationExplorer({place,footprints}:Props){
   try{
    m=new maplibregl.Map({container:node.current,center:[place.lon,place.lat],zoom:9,
     style:{version:8,sources:{osm:{type:'raster',tiles:['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],tileSize:256,attribution:'© OpenStreetMap contributors'}},
-    layers:[{id:'osm',type:'raster',source:'osm'}]},attributionControl:true});
+    layers:[{id:'osm',type:'raster',source:'osm'}]},attributionControl:{}});
   }catch(e){setError(e instanceof Error?e.message:'WebGL is unavailable');return;}
   map.current=m;
   m.addControl(new maplibregl.NavigationControl(),'top-right');
