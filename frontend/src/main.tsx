@@ -2,6 +2,7 @@ import {StrictMode,Suspense,lazy,useEffect,useState} from 'react';
 import {createRoot} from 'react-dom/client';
 import {Activity,ArrowDownToLine,ArrowRight,BookOpen,CheckCircle2,ChevronRight,Clock3,Compass,Database,ExternalLink,Globe2,Layers3,LayoutDashboard,Loader2,MapPin,Play,Satellite,ShieldAlert,Waves,X} from 'lucide-react';
 const SceneMap=lazy(()=>import('./Map'));
+const NasaSearch=lazy(()=>import('./NasaSearch'));
 import {api,BROWSER_MODE,type Scene,type Job,type Result,type System} from './api';
 import './style.css';
 
@@ -34,12 +35,13 @@ function App(){
    <div className="workspace-label">RESEARCH WORKSPACE <span>V0.2</span></div>
    <nav aria-label="Main navigation">{([[LayoutDashboard,'Overview'],[Compass,'Map explorer'],[Activity,'Analyses'],[BookOpen,'Methodology']] as const).map(([Icon,name])=><button key={name} className={page===name?'nav-item active':'nav-item'} onClick={()=>setPage(name)}><Icon size={18}/>{name}{page===name&&<span className="nav-dot"/>}</button>)}</nav>
    <div className="sidebar-section"><span className="eyebrow">ACTIVE MODULE</span><div className="module"><div className="module-icon"><Waves size={19}/></div><div>Surface water<span>Sentinel-1 · U-Net baseline</span></div><span className="live-dot"/></div><p>One planet.<br/>A clearer perspective.</p></div>
-   <div className="sidebar-footer"><span className={'status-dot '+(system?'online':'')}/>{system?(BROWSER_MODE?'Browser inference ready':'Local API connected'):'Loading workspace'}<span className="prototype">Research prototype</span></div>
+   <div className="sidebar-footer"><span className={'status-dot '+(system?'online':'')}/>{system?(BROWSER_MODE?(system.model_ready?'Browser inference ready':'Model assets unavailable'):'Local API connected'):'Model assets unavailable'}<span className="prototype">Research prototype</span></div>
   </aside>
   <main><header className="topbar"><div className="breadcrumb">Workspace <ChevronRight size={13}/> <strong>{page}</strong></div><div className="topbar-right"><span className="local-tag">{BROWSER_MODE?'BROWSER INFERENCE':'LOCAL DEVELOPMENT'}</span><div className="avatar">AE</div></div></header>
    <div className="main-content">
     {error&&<div className="error-banner" role="alert"><ShieldAlert size={18}/>{error}<button aria-label="Dismiss error" onClick={()=>setError('')}><X size={16}/></button></div>}
     <div className="page-heading"><div><span className="eyebrow green">EARTH OBSERVATION / FLOOD INTELLIGENCE</span><h1>{page==='Overview'?'A closer look at our changing Earth.':page==='Map explorer'?'From observation to insight.':page==='Analyses'?'Your analysis workspace.':'The science behind the signal.'}</h1><p>{page==='Overview'?'Explore real satellite imagery. Detect surface water. Understand the limits.':page==='Map explorer'?'Inspect a scene, run the baseline, and explore georeferenced water predictions.':page==='Analyses'?'Persistent jobs, reproducible outputs, and a transparent record of every run.':'Real data, a small baseline, and evidence you can inspect.'}</p></div>{(page==='Overview'||page==='Map explorer')&&runButton}</div>
+    {page==='Overview'&&<Suspense fallback={<div className="empty">Loading NASA scene search…</div>}><NasaSearch/></Suspense>}
     {loading?<div className="empty"><Loader2 className="spin"/>Loading the verified scene catalog…</div>:<>
     {page==='Overview'&&<>
      <div className="stat-grid"><Stat icon={<Satellite size={20}/>} label="VERIFIED SCENES" value={String(scenes.length).padStart(2,'0')} detail="Real, hand-labeled satellite data"/><Stat icon={<Activity size={20}/>} label="RECENT COMPLETED RUNS" value={String(jobs.filter(j=>j.status==='completed').length).padStart(2,'0')} detail="Among the latest 20 recorded jobs"/><Stat icon={<Layers3 size={20}/>} label="ACTIVE MODEL" value="U-Net" detail={system?.model_ready?(system.model?.evaluation_scope==='held_out_events'?'Event-disjoint pilot baseline':'Trained sample demonstration'):'Checkpoint not available'}/><Stat icon={<ShieldAlert size={20}/>} label="EVALUATION SCOPE" value={system?.model?.evaluation_scope==='held_out_events'?'Held-out':'In-sample'} detail={system?.model?.evaluation_scope==='held_out_events'?'Event-disjoint pilot evaluation':'Held-out regional validation pending'}/></div>
