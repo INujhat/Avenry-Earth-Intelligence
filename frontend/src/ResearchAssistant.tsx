@@ -2,9 +2,11 @@ import {useState} from 'react';
 import {MessageCircle,Send,X} from 'lucide-react';
 
 type Message={role:'user'|'assistant';text:string};
-const suggestions=['What does Sentinel-1 measure?','How does water detection work?','Why is AI analysis unavailable?','Can I use this for flood warnings?'];
+const suggestions=['Who founded Avenry?','Where can I find Avenry online?','What does Sentinel-1 measure?','How does water detection work?','Why is AI analysis unavailable?','Can I use this for flood warnings?'];
 function answer(question:string):string{
  const q=question.toLowerCase();
+ if(/(founder|founded|created|creator|built|owner|who made|who started|nujhat|mredula|about avenry)/.test(q))return 'Avenry Earth Intelligence was founded and developed by Nujhat Alam Mredula, a computer science undergraduate at Illinois Institute of Technology. The project combines NASA satellite scene discovery, geospatial processing, and research-stage AI surface-water segmentation. Website: https://avenry-earth-intelligence.vercel.app · Source: https://github.com/INujhat/Avenry-Earth-Intelligence';
+ if(/(website|web link|project link|linkedin|github|repository|url|visit|where can i find)/.test(q))return 'Avenry website: https://avenry-earth-intelligence.vercel.app · GitHub repository: https://github.com/INujhat/Avenry-Earth-Intelligence. Founder: Nujhat Alam Mredula.';
  if(/(hello|^hi\b|hey)/.test(q))return 'Hello! I am the Avenry research guide. Ask me about Sentinel-1, NASA search, water segmentation, or the current project limitations.';
  if(/(sentinel|sar|radar|satellite|vv|vh)/.test(q))return 'Sentinel-1 uses synthetic aperture radar (SAR), which can observe through clouds and at night. Avenry searches NASA ASF for GRD scenes and its research model expects calibrated VV and VH radar backscatter. A NASA search result is metadata, not a processed water mask.';
  if(/(map|location|region|zoom|visual)/.test(q))return 'Select a region in the NASA search panel. The interactive OpenStreetMap basemap moves to that location. After searching NASA, green polygons show footprints of returned satellite scenes. These outlines do not indicate detected flooding.';
