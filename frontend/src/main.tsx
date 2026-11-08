@@ -3,6 +3,7 @@ import {createRoot} from 'react-dom/client';
 import {Activity,ArrowDownToLine,ArrowRight,BookOpen,CheckCircle2,ChevronRight,Clock3,Compass,Database,ExternalLink,Globe2,Layers3,LayoutDashboard,Loader2,MapPin,Play,Satellite,ShieldAlert,Waves,X} from 'lucide-react';
 const SceneMap=lazy(()=>import('./Map'));
 const NasaSearch=lazy(()=>import('./NasaSearch'));
+const ResearchAssistant=lazy(()=>import('./ResearchAssistant'));
 import {api,BROWSER_MODE,type Scene,type Job,type Result,type System} from './api';
 import './style.css';
 
@@ -60,6 +61,7 @@ function App(){
     <footer className="footer"><span>Avenry Earth Intelligence <i/> Built for a clearer view.</span><span>Sen1Floods11 · Cloud to Street <span className="footer-divider">/</span> Research prototype</span></footer>
    </div>
   </main>
+  <Suspense fallback={null}><ResearchAssistant/></Suspense>
  </div>;
 }
 function Stat({icon,label,value,detail}:{icon:React.ReactNode;label:string;value:string;detail:string}){return <div className="stat-card"><div className="stat-top"><span>{label}</span>{icon}</div><strong>{value}</strong><p>{detail}</p></div>;}
