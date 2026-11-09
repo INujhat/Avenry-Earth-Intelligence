@@ -28,7 +28,11 @@ def prepare(destination: Path):
             or name == "data/sample-sources.json"
         ):
             continue
-        if path.suffix in {".tif", ".pt", ".db", ".png", ".jpg"} or ".env" in path.name:
+        # Never package local environment files, even if accidentally tracked.
+        # Excluding them here is safer than allowing a deployment to fail or leak secrets.
+        if ".env" in path.name:
+            continue
+        if path.suffix in {".tif", ".pt", ".db", ".png", ".jpg"}:
             raise ValueError(f"Unexpected data/secret file in deployment inventory: {name}")
         target = destination / name
         target.parent.mkdir(parents=True, exist_ok=True)
