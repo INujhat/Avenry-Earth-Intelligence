@@ -24,25 +24,37 @@ export default async function handler(req,res){
     if(distance>radius)return [];
     return [{type:'node',id:Number(a.OBJECTID||a.FID||i+1),lat:y,lon:x,tags:{amenity:'hospital',name:String(a.NAME||a.Name||'Hospital'), 'addr:street':String(a.ADDRESS||a.Address||''),'addr:city':String(a.CITY||a.City||''),phone:String(a.TELEPHONE||a.PHONE||''),source:'HIFLD / ArcGIS'}}];
    });
-   return res.status(200).json({elements,source:'HIFLD / ArcGIS',partial:true,provider_error:last});
+   if(elements.length)return res.status(200).json({elements,source:'HIFLD / ArcGIS',partial:true,provider_error:last});
   }catch(e){last+='; HIFLD lookup: '+(e instanceof Error?e.message:'Unavailable');}
  }
- // Worldwide OpenStreetMap query. A rejected provider must not block the others.
- const endpoints=['https://overpass.private.coffee/api/interpreter','https://overpass.kumi.systems/api/interpreter','https://overpass.nchc.org.tw/api/interpreter','https://overpass-api.de/api/interpreter'];
- const attempts=[];
- for(const endpoint of endpoints){
-  for(const method of ['POST','GET']){
-   try{
-    const url=method==='GET'?endpoint+'?'+new URLSearchParams({data:query}):endpoint;
-    const response=await fetch(url,{method,headers:{Accept:'application/json','User-Agent':'AvenryEarthIntelligence/1.0 (https://avenry-earth-intelligence.vercel.app/)',...(method==='POST'?{'Content-Type':'application/x-www-form-urlencoded'}:{})},...(method==='POST'?{body:new URLSearchParams({data:query})}:{}),signal:AbortSignal.timeout(6500)});
-    if(!response.ok){attempts.push(method+' '+new URL(endpoint).hostname+': HTTP '+response.status);continue;}
-    const data=await response.json();
-    if(!Array.isArray(data.elements))throw Error('Invalid response');
-    return res.status(200).json({elements:data.elements,source:'OpenStreetMap via Overpass',partial:false});
-   }catch(e){attempts.push(method+' '+new URL(endpoint).hostname+': '+(e instanceof Error?e.message:'Unavailable'));}
+ // Global OSM coverage. Parallelize a small number of public providers so a blocked
+ // instance does not consume the entire serverless request timeout.
+ const endpoints=[
+  'https://overpass.private.coffee/api/interpreter',
+  'https://overpass.kumi.systems/api/interpreter',
+  'https://overpass.nchc.org.tw/api/interpreter',
+  'https://overpass-api.de/api/interpreter'
+ ];
+ const attempt=async(endpoint,method)=>{
+  const url=method==='GET'?endpoint+'?'+new URLSearchParams({data:query}):endpoint;
+  const response=await fetch(url,{method,headers:{Accept:'application/json','User-Agent':'AvenryEarthIntelligence/1.0 (https://avenry-earth-intelligence.vercel.app/)',...(method==='POST'?{'Content-Type':'application/x-www-form-urlencoded'}:{})},...(method==='POST'?{body:new URLSearchParams({data:query})}:{}),signal:AbortSignal.timeout(8500)});
+  if(!response.ok)throw Error(new URL(endpoint).hostname+' HTTP '+response.status);
+  const data=await response.json();
+  if(!Array.isArray(data.elements))throw Error('Invalid provider response');
+  return data.elements;
+ };
+ const errors=[];
+ for(const method of ['POST','GET']){
+  const results=await Promise.allSettled(endpoints.map(endpoint=>attempt(endpoint,method)));
+  const successes=results.filter(r=>r.status==='fulfilled');
+  if(successes.length){
+   const nonempty=successes.find(r=>r.value.length>0);
+   const elements=(nonempty||successes[0]).value;
+   return res.status(200).json({elements,source:'OpenStreetMap via Overpass',partial:false});
   }
+  errors.push(...results.map(r=>r.status==='rejected'?String(r.reason?.message||r.reason):'Unknown error'));
  }
- last=attempts.slice(-4).join('; ');
+ last=errors.slice(-4).join('; ');
 
  return res.status(503).json({error:'Map providers are temporarily unavailable: '+last});
 }
