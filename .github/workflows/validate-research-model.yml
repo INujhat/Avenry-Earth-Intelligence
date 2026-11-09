@@ -47,6 +47,7 @@ jobs:
         with:
           name: avenry-pilot-research-evidence
           path: |
+            artifacts/baseline/model.pt
             artifacts/baseline/model.json
             data/subset-manifest.json
           retention-days: 7
