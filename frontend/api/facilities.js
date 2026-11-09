@@ -5,16 +5,14 @@ export default async function handler(req,res){
  const lat=Number(req.query.lat),lon=Number(req.query.lon),radius=Number(req.query.radius);
  if(!Number.isFinite(lat)||Math.abs(lat)>90||!Number.isFinite(lon)||Math.abs(lon)>180||![2000,5000,10000].includes(radius))return res.status(400).json({error:'Invalid location or radius'});
  const query='[out:json][timeout:12];(nwr["amenity"~"^(hospital|clinic|pharmacy|shelter|police|fire_station)$"](around:'+radius+','+lat+','+lon+');nwr["healthcare"~"^(hospital|clinic)$"](around:'+radius+','+lat+','+lon+');nwr["office"~"^(ngo|charity)$"](around:'+radius+','+lat+','+lon+');nwr["social_facility"="shelter"](around:'+radius+','+lat+','+lon+'););out center tags 150;';
- // Identify the application as required by public Overpass instance usage policies.
- const endpoints=['https://overpass.private.coffee/api/interpreter','https://overpass.kumi.systems/api/interpreter'];let last='';for(const endpoint of endpoints){try{const response=await fetch(endpoint,{method:'POST',headers:{'Accept':'application/json','Content-Type':'application/x-www-form-urlencoded','User-Agent':'AvenryEarthIntelligence/1.0 (+https://avenry-earth-intelligence.vercel.app/)','Referer':'https://avenry-earth-intelligence.vercel.app/'},body:new URLSearchParams({data:query}),signal:AbortSignal.timeout(14500)});if(!response.ok){last='Provider HTTP '+response.status;if(response.status===406||response.status===429)break;continue;}const data=await response.json();if(!Array.isArray(data.elements))throw Error('Invalid provider response');return res.status(200).json({elements:data.elements});}catch(e){last=e instanceof Error?e.message:'Unavailable';}}
-
+ let last='';
  // U.S. hospital fallback from public HIFLD ArcGIS feature layer (not live availability).
  if(lat>=18&&lat<=72&&lon>=-170&&lon<=-60){
   try{
    const dy=radius/111320,dx=radius/(111320*Math.max(0.2,Math.cos(lat*Math.PI/180)));
    const params=new URLSearchParams({where:'1=1',geometry:[lon-dx,lat-dy,lon+dx,lat+dy].join(','),geometryType:'esriGeometryEnvelope',inSR:'4326',spatialRel:'esriSpatialRelIntersects',outFields:'*',outSR:'4326',f:'json',resultRecordCount:'500'});
    const url='https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services/Hospitals_hifld/FeatureServer/0/query?'+params;
-   const response=await fetch(url,{signal:AbortSignal.timeout(10000),headers:{Accept:'application/json'}});
+   const response=await fetch(url,{signal:AbortSignal.timeout(6500),headers:{Accept:'application/json'}});
    if(!response.ok)throw Error('ArcGIS HTTP '+response.status);
    const data=await response.json();
    if(data.error)throw Error('ArcGIS '+String(data.error.message||'query failed'));
@@ -27,7 +25,11 @@ export default async function handler(req,res){
     return [{type:'node',id:Number(a.OBJECTID||a.FID||i+1),lat:y,lon:x,tags:{amenity:'hospital',name:String(a.NAME||a.Name||'Hospital'), 'addr:street':String(a.ADDRESS||a.Address||''),'addr:city':String(a.CITY||a.City||''),phone:String(a.TELEPHONE||a.PHONE||''),source:'HIFLD / ArcGIS'}}];
    });
    return res.status(200).json({elements,source:'HIFLD / ArcGIS',partial:true,provider_error:last});
-  }catch(e){last+='; HIFLD fallback: '+(e instanceof Error?e.message:'Unavailable');}
+  }catch(e){last+='; HIFLD lookup: '+(e instanceof Error?e.message:'Unavailable');}
  }
+ // Identify the application as required by public Overpass instance usage policies.
+ const endpoints=['https://overpass.private.coffee/api/interpreter','https://overpass.kumi.systems/api/interpreter'];for(const endpoint of endpoints){try{const response=await fetch(endpoint,{method:'POST',headers:{'Accept':'application/json','Content-Type':'application/x-www-form-urlencoded','User-Agent':'AvenryEarthIntelligence/1.0 (+https://avenry-earth-intelligence.vercel.app/)','Referer':'https://avenry-earth-intelligence.vercel.app/'},body:new URLSearchParams({data:query}),signal:AbortSignal.timeout(5500)});if(!response.ok){last='Provider HTTP '+response.status;if(response.status===406||response.status===429)break;continue;}const data=await response.json();if(!Array.isArray(data.elements))throw Error('Invalid provider response');return res.status(200).json({elements:data.elements});}catch(e){last=e instanceof Error?e.message:'Unavailable';}}
+
+
  return res.status(503).json({error:'Map providers are temporarily unavailable: '+last});
 }
