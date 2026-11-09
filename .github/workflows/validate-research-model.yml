@@ -31,7 +31,10 @@ jobs:
       - name: Train pilot U-Net on event-disjoint split
         run: python -m ml.train --epochs 35
       - name: Run automated tests
-        run: python -m pytest -q
+        run: |
+          # Browser export settings are generated locally and are not deployment inputs.
+          rm -f frontend/.env.browser
+          python -m pytest -q
       - name: Verify checkpoint and evaluation metadata exist
         run: |
           test -s artifacts/baseline/model.pt
