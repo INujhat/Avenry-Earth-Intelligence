@@ -55,5 +55,29 @@ jobs:
             artifacts/baseline/model.json
             data/subset-manifest.json
           retention-days: 7
+      - name: Install browser export dependencies
+        run: |
+          python -m pip install onnx onnxruntime tifffile
+          npm ci --prefix frontend
+      - name: Export ONNX model and validate against PyTorch
+        run: python -m scripts.export_browser --output frontend/browser-dist
+      - name: Verify browser catalog and conversion accuracy
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          root = Path('frontend/browser-dist')
+          catalog = json.loads((root/'data/catalog.json').read_text())
+          assert len(catalog['scenes']) == 8
+          assert (root/'data/water-unet.onnx').stat().st_size > 0
+          assert all(x['threshold_disagreements'] == 0 and x['max_logit_difference'] < 0.0002 for x in catalog['conversion_validation'])
+          print('Verified real ONNX model and', len(catalog['scenes']), 'georeferenced research scenes')
+          PY
+      - name: Preserve private browser inference evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: avenry-private-browser-inference
+          path: frontend/browser-dist/
+          retention-days: 7
       # Deliberately no public deployment, and no model or dataset uploads.
       # Review evaluation, licensing and geospatial correctness before publication.
