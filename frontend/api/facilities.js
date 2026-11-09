@@ -27,9 +27,22 @@ export default async function handler(req,res){
    return res.status(200).json({elements,source:'HIFLD / ArcGIS',partial:true,provider_error:last});
   }catch(e){last+='; HIFLD lookup: '+(e instanceof Error?e.message:'Unavailable');}
  }
- // Identify the application as required by public Overpass instance usage policies.
- const endpoints=['https://overpass.private.coffee/api/interpreter','https://overpass.kumi.systems/api/interpreter'];for(const endpoint of endpoints){try{const response=await fetch(endpoint,{method:'POST',headers:{'Accept':'application/json','Content-Type':'application/x-www-form-urlencoded','User-Agent':'AvenryEarthIntelligence/1.0 (+https://avenry-earth-intelligence.vercel.app/)','Referer':'https://avenry-earth-intelligence.vercel.app/'},body:new URLSearchParams({data:query}),signal:AbortSignal.timeout(5500)});if(!response.ok){last='Provider HTTP '+response.status;if(response.status===406||response.status===429)break;continue;}const data=await response.json();if(!Array.isArray(data.elements))throw Error('Invalid provider response');return res.status(200).json({elements:data.elements});}catch(e){last=e instanceof Error?e.message:'Unavailable';}}
-
+ // Worldwide OpenStreetMap query. A rejected provider must not block the others.
+ const endpoints=['https://overpass.private.coffee/api/interpreter','https://overpass.kumi.systems/api/interpreter','https://overpass.nchc.org.tw/api/interpreter','https://overpass-api.de/api/interpreter'];
+ const attempts=[];
+ for(const endpoint of endpoints){
+  for(const method of ['POST','GET']){
+   try{
+    const url=method==='GET'?endpoint+'?'+new URLSearchParams({data:query}):endpoint;
+    const response=await fetch(url,{method,headers:{Accept:'application/json','User-Agent':'AvenryEarthIntelligence/1.0 (https://avenry-earth-intelligence.vercel.app/)',...(method==='POST'?{'Content-Type':'application/x-www-form-urlencoded'}:{})},...(method==='POST'?{body:new URLSearchParams({data:query})}:{}),signal:AbortSignal.timeout(6500)});
+    if(!response.ok){attempts.push(method+' '+new URL(endpoint).hostname+': HTTP '+response.status);continue;}
+    const data=await response.json();
+    if(!Array.isArray(data.elements))throw Error('Invalid response');
+    return res.status(200).json({elements:data.elements,source:'OpenStreetMap via Overpass',partial:false});
+   }catch(e){attempts.push(method+' '+new URL(endpoint).hostname+': '+(e instanceof Error?e.message:'Unavailable'));}
+  }
+ }
+ last=attempts.slice(-4).join('; ');
 
  return res.status(503).json({error:'Map providers are temporarily unavailable: '+last});
 }
