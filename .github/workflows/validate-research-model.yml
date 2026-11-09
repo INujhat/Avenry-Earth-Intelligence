@@ -1,5 +1,7 @@
 name: Validate Avenry research model (isolated)
 on:
+  push:
+    branches: [research/validated-ai-pipeline]
   workflow_dispatch:
 
 permissions:
