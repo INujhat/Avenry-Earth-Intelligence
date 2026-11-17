@@ -4,7 +4,34 @@ const LocationExplorer=lazy(()=>import('./LocationExplorer'));
 import {useState} from 'react';
 type Feature={properties?:Record<string,unknown>;geometry?:unknown};
 type SearchResult={features?:Feature[]};
-const regions=[{name:'Sylhet, Bangladesh',lat:24.89,lon:91.87},{name:'Houston, Texas',lat:29.76,lon:-95.37},{name:'New Orleans, Louisiana',lat:29.95,lon:-90.07},{name:'Kerala, India',lat:10.5,lon:76.5}];
+const regions=[
+ {name:'Sylhet, Bangladesh',lat:24.89,lon:91.87},
+ {name:'Houston, Texas, USA',lat:29.76,lon:-95.37},
+ {name:'New Orleans, Louisiana, USA',lat:29.95,lon:-90.07},
+ {name:'Kerala, India',lat:10.5,lon:76.5},
+ {name:'Dhaka, Bangladesh',lat:23.81,lon:90.41},
+ {name:'Sunamganj, Bangladesh',lat:25.07,lon:91.40},
+ {name:'Chattogram, Bangladesh',lat:22.36,lon:91.78},
+ {name:'Chicago, Illinois, USA',lat:41.88,lon:-87.63},
+ {name:'Miami, Florida, USA',lat:25.76,lon:-80.19},
+ {name:'New York City, New York, USA',lat:40.71,lon:-74.01},
+ {name:'Sacramento, California, USA',lat:38.58,lon:-121.49},
+ {name:'Richmond, Virginia, USA',lat:37.54,lon:-77.44},
+ {name:'Jakarta, Indonesia',lat:-6.21,lon:106.85},
+ {name:'Manila, Philippines',lat:14.60,lon:120.98},
+ {name:'Bangkok, Thailand',lat:13.76,lon:100.50},
+ {name:'Lahore, Pakistan',lat:31.55,lon:74.34},
+ {name:'Karachi, Pakistan',lat:24.86,lon:67.01},
+ {name:'Chennai, India',lat:13.08,lon:80.27},
+ {name:'Mumbai, India',lat:19.08,lon:72.88},
+ {name:'Nairobi, Kenya',lat:-1.29,lon:36.82},
+ {name:'Lagos, Nigeria',lat:6.52,lon:3.38},
+ {name:'Beira, Mozambique',lat:-19.84,lon:34.84},
+ {name:'Venice, Italy',lat:45.44,lon:12.33},
+ {name:'Kaiserslautern, Germany',lat:49.44,lon:7.77},
+ {name:'Brisbane, Australia',lat:-27.47,lon:153.03},
+ {name:'Porto Alegre, Brazil',lat:-30.03,lon:-51.23}
+];
 export default function NasaSearch(){
  const [region,setRegion]=useState(0),[customLat,setCustomLat]=useState(''),[customLon,setCustomLon]=useState(''),[customName,setCustomName]=useState('My location'),[start,setStart]=useState('2022-06-01'),[end,setEnd]=useState('2022-06-30');
  const [items,setItems]=useState<Feature[]>([]),[busy,setBusy]=useState(false),[error,setError]=useState(''),[searched,setSearched]=useState(false);
@@ -42,7 +69,7 @@ export default function NasaSearch(){
    <label style={{display:'grid',gap:6,fontSize:11}}>To<input type="date" value={end} onChange={e=>setEnd(e.target.value)} style={{padding:9,border:'1px solid #dfe7df',borderRadius:5}}/></label>
    <button className="button primary" onClick={search} disabled={busy||!validPlace}>{busy?'Searching NASA…':'Search NASA imagery'}</button>
   </div>
-  <div role="status" aria-live="polite" style={{padding:16,marginTop:16,background:busy?'#eaf2ed':error?'#fff2eb':'#f1f6f0',border:'1px solid #dce9dc',borderRadius:8,fontSize:13,lineHeight:1.7}}>{busy?'Searching NASA ASF for real satellite acquisition records…':error?'Search failed: '+error:searched?items.length?`${items.length} real NASA satellite record(s) found. See the results directly below the map. These are acquisition records, not flood predictions.`:'NASA returned no records for this date range. Try a longer date range or a different location.':'Choose a region and date range, then search NASA. The map below is a geographic basemap; actual satellite records appear after a successful search.'}</div>
+  <div role="status" aria-live="polite" style={{padding:16,marginTop:16,background:busy?'#eaf2ed':error?'#fff2eb':'#f1f6f0',border:'1px solid #dce9dc',borderRadius:8,fontSize:13,lineHeight:1.7}}>{busy?'Searching NASA ASF for real satellite acquisition records…':error?'Search failed: '+error:searched?items.length?`${items.length} real NASA satellite record(s) found. See the results directly below the map. These are acquisition records, not flood predictions.`:'NASA returned no records for this date range. Try a longer date range or a different location.':'Choose from 26 global regions or enter custom coordinates, select a date range, then search NASA. The map below is a geographic basemap; actual satellite records appear after a successful search.'}</div>
   {items.length>0&&<div style={{background:'#fff',border:'1px solid #dce9dc',borderRadius:8,padding:14,marginTop:12}}><strong style={{fontSize:13}}>NASA search results ({items.length})</strong><p style={{fontSize:11,color:'#66786d',marginTop:6}}>The returned scenes are listed in Observations and below the map. Satellite discovery does not activate the separate AI water-analysis model.</p></div>}
   <div style={{marginTop:18,marginBottom:14}}>{validPlace?<Suspense fallback={<div style={{padding:30,background:'#edf2ed'}}>Loading interactive location map…</div>}><LocationExplorer place={selected} footprints={footprints}/></Suspense>:<div role="status" style={{padding:24,background:'#f4f7f4',borderRadius:8}}>Enter valid coordinates to display your location on the map.</div>}<p style={{fontSize:11,color:'#6f8075',marginTop:7}}>Live geographic basemap by OpenStreetMap. Search NASA to display returned satellite scene footprints; the basemap itself is not Sentinel-1 imagery.</p></div>
   <div style={{display:'flex',gap:14,flexWrap:'wrap',fontSize:12,margin:'10px 0 14px'}}><a href={mapLink} target="_blank" rel="noopener noreferrer" style={{color:'#265d45',textDecoration:'underline'}}>Open full map ↗</a><button type="button" onClick={()=>navigator.clipboard?.writeText(mapLink).catch(()=>{})} style={{color:'#265d45',textDecoration:'underline',background:'none',padding:0}}>Copy location map link</button></div>
