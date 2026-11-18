@@ -1,0 +1,56 @@
+import {useState} from 'react';
+import {loadObservations,type ObservationStore} from './Observations';
+type Facility={name:string;kind:string;lat:number;lon:number;address:string;distance_km:number};
+type Investigation={id:string;created_at:string;location:{name:string;lat:number;lon:number};period:{from:string;to:string};radius_km:number;observations:ObservationStore|null;facilities:Facility[];sources:string[];limitations:string[]};
+const KEY='avenry-unified-investigations-v1';
+const places=[['Sylhet, Bangladesh',24.89,91.87],['Kaiserslautern, Germany',49.44,7.77],['Houston, Texas, USA',29.76,-95.37],['Dhaka, Bangladesh',23.81,90.41],['Chicago, Illinois, USA',41.88,-87.63],['New York City, USA',40.71,-74.01],['Kerala, India',10.5,76.5],['Jakarta, Indonesia',-6.21,106.85],['Nairobi, Kenya',-1.29,36.82],['Lagos, Nigeria',6.52,3.38],['Brisbane, Australia',-27.47,153.03]] as const;
+function read():Investigation[]{try{const v=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(v)?v:[]}catch{return []}}
+function download(item:Investigation){const url=URL.createObjectURL(new Blob([JSON.stringify(item,null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download='avenry-investigation-'+item.id+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}
+function distance(lat:number,lon:number,a:number,b:number){const r=Math.PI/180;const dlat=(a-lat)*r,dlon=(b-lon)*r;return 6371*2*Math.asin(Math.min(1,Math.sqrt(Math.sin(dlat/2)**2+Math.cos(lat*r)*Math.cos(a*r)*Math.sin(dlon/2)**2)))}
+function kind(t:Record<string,string>){return t.amenity||t.healthcare||t.office||t.social_facility||'facility'}
+export default function Investigations(){
+ const [region,setRegion]=useState('0'),[customName,setCustomName]=useState(''),[lat,setLat]=useState(''),[lon,setLon]=useState(''),[from,setFrom]=useState('2022-06-01'),[to,setTo]=useState('2022-06-30'),[radius,setRadius]=useState(10000);
+ const [busy,setBusy]=useState(false),[error,setError]=useState(''),[items,setItems]=useState<Investigation[]>(read),[latest,setLatest]=useState<Investigation|null>(null);
+ const preset=places[Number(region)];const latitude=region==='custom'?Number(lat):preset[1],longitude=region==='custom'?Number(lon):preset[2],name=region==='custom'?customName.trim()||'Custom location':preset[0];
+ const valid=Number.isFinite(latitude)&&Number.isFinite(longitude)&&Math.abs(latitude)<=90&&Math.abs(longitude)<=180&&(region!=='custom'||lat.trim()!==''&&lon.trim()!=='')&&!!from&&!!to&&from<=to;
+ async function investigate(){
+  if(!valid)return;setBusy(true);setError('');setLatest(null);
+  const d=.18,wkt='POLYGON(('+[[longitude-d,latitude-d],[longitude+d,latitude-d],[longitude+d,latitude+d],[longitude-d,latitude+d],[longitude-d,latitude-d]].map(p=>p.join(' ')).join(',')+'))';
+  const params=new URLSearchParams({platform:'Sentinel-1',processingLevel:'GRD_HD',intersectsWith:wkt,start:from,end:to,output:'geojson',maxResults:'100'});
+  const notes:string[]=[];let observations:ObservationStore|null=null;let facilities:Facility[]=[];let facilitySource='';
+  try{
+   const responses=await Promise.allSettled([
+    fetch('https://api.daac.asf.alaska.edu/services/search/param?'+params,{signal:AbortSignal.timeout(25000)}).then(async r=>{if(!r.ok)throw Error('NASA HTTP '+r.status);return r.json()}),
+    fetch('/api/facilities?'+new URLSearchParams({lat:String(latitude),lon:String(longitude),radius:String(radius)}),{signal:AbortSignal.timeout(65000)}).then(async r=>{if(!r.ok)throw Error('Facilities HTTP '+r.status);return r.json()})
+   ]);
+   if(responses[0].status==='fulfilled'&&Array.isArray(responses[0].value.features)){
+    const features=responses[0].value.features as Array<{properties?:Record<string,unknown>}>;
+    observations={region:name,latitude,longitude,start:from,end:to,updated_at:new Date().toISOString(),scenes:features.map((f,i)=>{const p=f.properties||{};return {id:String(p.sceneName||p.fileID||p.granuleName||'Scene '+(i+1)),date:String(p.startTime||p.stopTime||''),polarization:String(p.polarization||'Unknown'),orbit:String(p.flightDirection||'Unknown'),platform:String(p.platform||'Sentinel-1'),url:typeof p.url==='string'&&p.url.startsWith('https://')?p.url:null}})};
+    if(features.length===100)notes.push('NASA search reached the 100-record cap; results are not exhaustive.');
+   }else notes.push('NASA search failed or returned an unexpected format; no acquisition evidence is included.');
+   if(responses[1].status==='fulfilled'&&Array.isArray(responses[1].value.elements)){
+    const data=responses[1].value;facilitySource=String(data.source||'OpenStreetMap via Overpass');
+    if(data.partial)notes.push('Facility results are partial: provider returned only some categories.');
+    facilities=(data.elements as Array<{lat?:number;lon?:number;center?:{lat:number;lon:number};tags?:Record<string,string>}>).flatMap(e=>{const p=e.center||e,t=e.tags||{};if(typeof p.lat!=='number'||typeof p.lon!=='number')return [];return [{name:t.name||'Unnamed '+kind(t),kind:kind(t),lat:p.lat,lon:p.lon,address:[t['addr:street'],t['addr:city']].filter(Boolean).join(', '),distance_km:Number(distance(latitude,longitude,p.lat,p.lon).toFixed(2))}]}).sort((a,b)=>a.distance_km-b.distance_km);
+   }else notes.push('Facility lookup failed; no facility evidence is included.');
+   if(!observations&&!facilitySource){setError('Both data providers failed. Please try again.');return}
+   const record:Investigation={id:crypto.randomUUID(),created_at:new Date().toISOString(),location:{name,lat:latitude,lon:longitude},period:{from,to},radius_km:radius/1000,observations,facilities,sources:['NASA Alaska Satellite Facility ASF'+(observations?'':' (unavailable)'),facilitySource||'OpenStreetMap (unavailable)'],limitations:['Satellite footprints are acquisition coverage, not detected water or flooding.','Facilities are mapped listings, not verified operating or emergency capacity.','Facility proximity is not proof of exposure, damage, or risk.','No water-change model or population exposure assessment was run.',...notes]};
+   setLatest(record);setItems(old=>{const next=[record,...old];try{localStorage.setItem(KEY,JSON.stringify(next))}catch{setError('Investigation created but could not be saved locally; download the report.')}return next});
+  }catch(e){setError(e instanceof Error?e.message:'Investigation failed')}finally{setBusy(false)}
+ }
+ return <section style={{display:'grid',gap:18}}>
+ <div style={{background:'white',padding:22,border:'1px solid #dfe7df',borderRadius:10}}>
+ <span className="eyebrow green">UNIFIED EARTH INVESTIGATION / LIVE SOURCES</span><h2 style={{fontSize:21,margin:'10px 0'}}>Investigate a place and its community</h2>
+ <p style={{fontSize:13,lineHeight:1.7,color:'#66786d'}}>One workflow combines NASA Sentinel-1 acquisition evidence and nearby mapped infrastructure. This first release does not yet calculate environmental change or predict human impact.</p>
+ <div style={{display:'flex',flexWrap:'wrap',gap:12,marginTop:18,alignItems:'end'}}>
+ <label style={{display:'grid',gap:6,fontSize:12}}>Location<select value={region} onChange={e=>setRegion(e.target.value)} style={{padding:10,border:'1px solid #dfe7df',borderRadius:6}}>{places.map((p,i)=><option key={p[0]} value={i}>{p[0]}</option>)}<option value="custom">Custom coordinates</option></select></label>
+ {region==='custom'&&<><label style={{display:'grid',gap:6,fontSize:12}}>Place name<input value={customName} onChange={e=>setCustomName(e.target.value)} style={{padding:10,border:'1px solid #dfe7df',borderRadius:6}}/></label><label style={{display:'grid',gap:6,fontSize:12}}>Latitude<input type="number" value={lat} onChange={e=>setLat(e.target.value)} style={{padding:10,width:120,border:'1px solid #dfe7df',borderRadius:6}}/></label><label style={{display:'grid',gap:6,fontSize:12}}>Longitude<input type="number" value={lon} onChange={e=>setLon(e.target.value)} style={{padding:10,width:120,border:'1px solid #dfe7df',borderRadius:6}}/></label></>}
+ <label style={{display:'grid',gap:6,fontSize:12}}>From<input type="date" value={from} onChange={e=>setFrom(e.target.value)} style={{padding:9,border:'1px solid #dfe7df',borderRadius:6}}/></label><label style={{display:'grid',gap:6,fontSize:12}}>To<input type="date" value={to} onChange={e=>setTo(e.target.value)} style={{padding:9,border:'1px solid #dfe7df',borderRadius:6}}/></label>
+ <label style={{display:'grid',gap:6,fontSize:12}}>Facility radius<select value={radius} onChange={e=>setRadius(Number(e.target.value))} style={{padding:10,border:'1px solid #dfe7df',borderRadius:6}}>{[2000,5000,10000,25000,50000].map(x=><option key={x} value={x}>{x/1000} km</option>)}</select></label>
+ <button className="button primary" disabled={!valid||busy} onClick={investigate}>{busy?'Retrieving live evidence…':'Run investigation'}</button>
+ </div>{error&&<p role="alert" style={{marginTop:14,color:'#a54b35'}}>{error}</p>}
+ </div>
+ {latest&&<div style={{background:'white',padding:22,border:'1px solid #dfe7df',borderRadius:10}}><span className="eyebrow green">EVIDENCE SUMMARY</span><h3 style={{fontSize:19,margin:'10px 0'}}>{latest.location.name}</h3><p style={{fontSize:12,color:'#66786d'}}>{latest.period.from} to {latest.period.to} · Retrieved {new Date(latest.created_at).toLocaleString()}</p><div style={{display:'flex',gap:12,flexWrap:'wrap',margin:'16px 0'}}><div style={{background:'#f1f6f0',padding:15,borderRadius:8}}><strong style={{fontSize:26}}>{latest.observations?.scenes.length??'—'}</strong><p style={{fontSize:12}}>NASA acquisition records</p></div><div style={{background:'#f1f6f0',padding:15,borderRadius:8}}><strong style={{fontSize:26}}>{latest.facilities.length}</strong><p style={{fontSize:12}}>Mapped facilities returned</p></div></div><h4>Nearest mapped facilities</h4>{latest.facilities.slice(0,8).map((f,i)=><div key={i} style={{padding:'9px 0',borderBottom:'1px solid #edf1ed',fontSize:12}}><strong>{f.name}</strong> · {f.kind} · {f.distance_km} km</div>)}<p style={{fontSize:12,color:'#66786d',marginTop:14}}><strong>Evidence limits:</strong> {latest.limitations.join(' ')}</p><button className="button secondary" style={{marginTop:14}} onClick={()=>download(latest)}>Download investigation evidence (JSON)</button></div>}
+ <div style={{background:'white',padding:22,border:'1px solid #dfe7df',borderRadius:10}}><h3 style={{fontSize:18}}>Saved investigations ({items.length})</h3><p style={{fontSize:12,color:'#66786d',margin:'8px 0 16px'}}>Stored only in this browser. Download copies before clearing browser data.</p>{items.length===0?<p style={{fontSize:12}}>Run your first investigation to save a combined evidence record.</p>:items.map(x=><div key={x.id} style={{padding:'12px 0',borderTop:'1px solid #edf1ed',display:'flex',justifyContent:'space-between',gap:12,alignItems:'center',flexWrap:'wrap'}}><div><strong>{x.location.name}</strong><p style={{fontSize:12,color:'#66786d'}}>{x.observations?.scenes.length??'No'} NASA records · {x.facilities.length} facilities · {x.period.from} to {x.period.to}</p></div><button className="button secondary" onClick={()=>{setLatest(x);download(x)}}>Open & export</button></div>)}</div>
+ </section>
+}
