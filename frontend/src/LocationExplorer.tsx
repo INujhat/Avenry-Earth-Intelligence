@@ -26,6 +26,7 @@ export default function LocationExplorer({place,footprints}:Props){
  return <div style={{position:'relative',height:390,borderRadius:10,overflow:'hidden',border:'1px solid #dfe7df',background:'#dce8df'}}>
   <div ref={node} style={{width:'100%',height:'100%'}} role="region" aria-label={'Interactive map of '+place.name}/>
   {error&&<div role="alert" style={{position:'absolute',top:12,left:12,background:'white',padding:12}}>{error}</div>}
+  <div style={{position:'absolute',top:12,left:12,background:'rgba(255,255,255,.97)',padding:'10px 12px',borderRadius:7,fontSize:12,maxWidth:310,boxShadow:'0 2px 12px #0001',pointerEvents:'none'}}><strong>Map legend</strong><div style={{display:'flex',alignItems:'center',gap:8,marginTop:7}}><span style={{width:19,height:13,background:'rgba(29,148,105,.18)',border:'2px solid #127452',display:'inline-block'}}/>Green polygon = satellite image coverage</div><div style={{color:'#53675c',marginTop:6,lineHeight:1.5}}>Overlapping polygons are repeated satellite coverage, <strong>not flood zones or detected water.</strong></div></div>
   <div style={{position:'absolute',bottom:30,left:12,background:'rgba(255,255,255,.94)',padding:'8px 11px',borderRadius:6,fontSize:11,pointerEvents:'none'}}>
    <strong>{place.name}</strong> · {place.lat.toFixed(3)}°, {place.lon.toFixed(3)}°<br/>
    Green outlines = NASA scene footprints, not detected flooding
