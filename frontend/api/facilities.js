@@ -3,8 +3,8 @@ export default async function handler(req,res){
  res.setHeader('Cache-Control','public, s-maxage=300, stale-while-revalidate=600');
  if(req.method!=='GET')return res.status(405).json({error:'Method not allowed'});
  const lat=Number(req.query.lat),lon=Number(req.query.lon),radius=Number(req.query.radius);
- if(!Number.isFinite(lat)||Math.abs(lat)>90||!Number.isFinite(lon)||Math.abs(lon)>180||![2000,5000,10000].includes(radius))return res.status(400).json({error:'Invalid location or radius'});
- const query='[out:json][timeout:12];(nwr["amenity"~"^(hospital|clinic|pharmacy|shelter|police|fire_station)$"](around:'+radius+','+lat+','+lon+');nwr["healthcare"~"^(hospital|clinic)$"](around:'+radius+','+lat+','+lon+');nwr["office"~"^(ngo|charity)$"](around:'+radius+','+lat+','+lon+');nwr["social_facility"="shelter"](around:'+radius+','+lat+','+lon+'););out center tags 150;';
+ if(!Number.isFinite(lat)||Math.abs(lat)>90||!Number.isFinite(lon)||Math.abs(lon)>180||![2000,5000,10000,25000,50000].includes(radius))return res.status(400).json({error:'Invalid location or radius'});
+ const query='[out:json][timeout:20];(nwr["amenity"~"^(hospital|clinic|pharmacy|shelter|police|fire_station)$"](around:'+radius+','+lat+','+lon+');nwr["healthcare"~"^(hospital|clinic)$"](around:'+radius+','+lat+','+lon+');nwr["office"~"^(ngo|charity)$"](around:'+radius+','+lat+','+lon+');nwr["social_facility"="shelter"](around:'+radius+','+lat+','+lon+'); );out center tags 500;';
  let last='';
  // U.S. hospital fallback from public HIFLD ArcGIS feature layer (not live availability).
  if(lat>=18&&lat<=72&&lon>=-170&&lon<=-60){
@@ -37,7 +37,7 @@ export default async function handler(req,res){
  ];
  const attempt=async(endpoint,method)=>{
   const url=method==='GET'?endpoint+'?'+new URLSearchParams({data:query}):endpoint;
-  const response=await fetch(url,{method,headers:{Accept:'application/json','User-Agent':'AvenryEarthIntelligence/1.0 (https://avenry-earth-intelligence.vercel.app/)',...(method==='POST'?{'Content-Type':'application/x-www-form-urlencoded'}:{})},...(method==='POST'?{body:new URLSearchParams({data:query})}:{}),signal:AbortSignal.timeout(8500)});
+  const response=await fetch(url,{method,headers:{Accept:'application/json','User-Agent':'AvenryEarthIntelligence/1.0 (https://avenry-earth-intelligence.vercel.app/)',...(method==='POST'?{'Content-Type':'application/x-www-form-urlencoded'}:{})},...(method==='POST'?{body:new URLSearchParams({data:query})}:{}),signal:AbortSignal.timeout(12000)});
   if(!response.ok)throw Error(new URL(endpoint).hostname+' HTTP '+response.status);
   const data=await response.json();
   if(!Array.isArray(data.elements))throw Error('Invalid provider response');
