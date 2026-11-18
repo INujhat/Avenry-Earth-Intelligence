@@ -5,6 +5,36 @@ type Facility={id:string;name:string;kind:string;lat:number;lon:number;address:s
 type OSM={elements?:Array<{type:string;id:number;lat?:number;lon?:number;center?:{lat:number;lon:number};tags?:Record<string,string>}>};
 const tags=[['hospital','Hospitals'],['clinic','Clinics'],['pharmacy','Pharmacies'],['shelter','Shelters'],['ngo','NGOs / charities'],['police','Police stations'],['fire_station','Fire stations']] as const;
 function category(t:Record<string,string>){if(t.amenity==='hospital'||t.healthcare==='hospital')return 'hospital';if(t.amenity==='clinic'||t.healthcare==='clinic')return 'clinic';if(t.amenity==='pharmacy')return 'pharmacy';if(t.amenity==='shelter'||t.social_facility==='shelter')return 'shelter';if(t.office==='ngo'||t.office==='charity')return 'ngo';if(t.amenity==='police')return 'police';if(t.amenity==='fire_station')return 'fire_station';return null;}
+const communityPlaces=[
+
+ {name:'Sylhet, Bangladesh',lat:24.89,lon:91.87},
+ {name:'Houston, Texas, USA',lat:29.76,lon:-95.37},
+ {name:'New Orleans, Louisiana, USA',lat:29.95,lon:-90.07},
+ {name:'Kerala, India',lat:10.5,lon:76.5},
+ {name:'Dhaka, Bangladesh',lat:23.81,lon:90.41},
+ {name:'Sunamganj, Bangladesh',lat:25.07,lon:91.40},
+ {name:'Chattogram, Bangladesh',lat:22.36,lon:91.78},
+ {name:'Chicago, Illinois, USA',lat:41.88,lon:-87.63},
+ {name:'Miami, Florida, USA',lat:25.76,lon:-80.19},
+ {name:'New York City, New York, USA',lat:40.71,lon:-74.01},
+ {name:'Sacramento, California, USA',lat:38.58,lon:-121.49},
+ {name:'Richmond, Virginia, USA',lat:37.54,lon:-77.44},
+ {name:'Jakarta, Indonesia',lat:-6.21,lon:106.85},
+ {name:'Manila, Philippines',lat:14.60,lon:120.98},
+ {name:'Bangkok, Thailand',lat:13.76,lon:100.50},
+ {name:'Lahore, Pakistan',lat:31.55,lon:74.34},
+ {name:'Karachi, Pakistan',lat:24.86,lon:67.01},
+ {name:'Chennai, India',lat:13.08,lon:80.27},
+ {name:'Mumbai, India',lat:19.08,lon:72.88},
+ {name:'Nairobi, Kenya',lat:-1.29,lon:36.82},
+ {name:'Lagos, Nigeria',lat:6.52,lon:3.38},
+ {name:'Beira, Mozambique',lat:-19.84,lon:34.84},
+ {name:'Venice, Italy',lat:45.44,lon:12.33},
+ {name:'Kaiserslautern, Germany',lat:49.44,lon:7.77},
+ {name:'Brisbane, Australia',lat:-27.47,lon:153.03},
+ {name:'Porto Alegre, Brazil',lat:-30.03,lon:-51.23}
+
+];
 export default function CommunityResources(){
  const [place,setPlace]=useState(()=>loadObservations());const [manualName,setManualName]=useState('Kaiserslautern, Germany'),[manualLat,setManualLat]=useState('49.4447'),[manualLon,setManualLon]=useState('7.7689'),[manualMode,setManualMode]=useState(true),[searched,setSearched]=useState(false);const [radius,setRadius]=useState(5000);const [facilities,setFacilities]=useState<Facility[]>([]);const [busy,setBusy]=useState(false);const [error,setError]=useState('');const [selected,setSelected]=useState('hospital');const mapElement=useRef<HTMLDivElement>(null);const mapInstance=useRef<maplibregl.Map|null>(null);const [dataSource,setDataSource]=useState('');const [partial,setPartial]=useState(false);
  useEffect(()=>{if(!facilities.length||!mapElement.current)return;const map=new maplibregl.Map({container:mapElement.current,style:{version:8,sources:{osm:{type:'raster',tiles:['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],tileSize:256,attribution:'© OpenStreetMap contributors'}},layers:[{id:'osm',type:'raster',source:'osm'}]},center:[facilities[0].lon,facilities[0].lat],zoom:11});mapInstance.current=map;const bounds=new maplibregl.LngLatBounds();for(const f of facilities){bounds.extend([f.lon,f.lat]);const node=document.createElement('div');node.style.cssText='width:13px;height:13px;border-radius:50%;background:#265d45;border:2px solid white;box-shadow:0 1px 6px #333';new maplibregl.Marker({element:node}).setLngLat([f.lon,f.lat]).setPopup(new maplibregl.Popup({offset:12}).setText(f.name+' — '+f.kind.replace('_',' '))).addTo(map);}if(facilities.length>1)map.fitBounds(bounds,{padding:45,maxZoom:13});return()=>{map.remove();mapInstance.current=null;};},[facilities]);
@@ -19,6 +49,7 @@ export default function CommunityResources(){
  <div style={{background:'#fff',padding:23,border:'1px solid #e1e7e1',borderRadius:10}}>
  <span className="eyebrow green">COMMUNITY RESILIENCE / OPEN DATA</span><h2 style={{fontSize:21,margin:'9px 0'}}>What support exists near this location?</h2><p style={{fontSize:13,lineHeight:1.8,color:'#66786d'}}>Find mapped hospitals, clinics, pharmacies, shelters, nonprofits and emergency services near a place you explored in NASA search. This is an infrastructure directory, not a live disaster-response service.</p>
  <div style={{display:'flex',gap:12,flexWrap:'wrap',alignItems:'center',marginTop:16}}><label style={{fontSize:12}}>Location source <select value={manualMode?'manual':'nasa'} onChange={e=>{setManualMode(e.target.value==='manual');setFacilities([]);setSearched(false);setError('')}} style={{padding:9,marginLeft:8,border:'1px solid #dfe7df',borderRadius:6}}><option value="manual">Choose a location</option><option value="nasa" disabled={!place}>Latest NASA search location</option></select></label></div>
+ {manualMode&&<label style={{display:'grid',gap:6,fontSize:12,marginTop:12,maxWidth:340}}>Choose a region<select defaultValue="" onChange={e=>{const chosen=communityPlaces[Number(e.target.value)];if(!chosen)return;setManualName(chosen.name);setManualLat(String(chosen.lat));setManualLon(String(chosen.lon));setFacilities([]);setSearched(false);}} style={{padding:10,border:'1px solid #dfe7df',borderRadius:6}}><option value="" disabled>Select from 26 locations</option>{communityPlaces.map((p,i)=><option value={i} key={p.name}>{p.name}</option>)}</select></label>}
  {manualMode&&<div style={{display:'flex',gap:10,flexWrap:'wrap',marginTop:12}}><label style={{fontSize:12}}>Location name<input value={manualName} onChange={e=>setManualName(e.target.value)} placeholder="Kaiserslautern, Germany" style={{display:'block',padding:9,border:'1px solid #dfe7df',borderRadius:6,minWidth:190}}/></label><label style={{fontSize:12}}>Latitude<input type="number" step="any" value={manualLat} onChange={e=>setManualLat(e.target.value)} style={{display:'block',padding:9,border:'1px solid #dfe7df',borderRadius:6,width:130}}/></label><label style={{fontSize:12}}>Longitude<input type="number" step="any" value={manualLon} onChange={e=>setManualLon(e.target.value)} style={{display:'block',padding:9,border:'1px solid #dfe7df',borderRadius:6,width:130}}/></label></div>}
  {!location?<p style={{marginTop:18,padding:16,background:'#f3f7f2'}}>Select a location or enter coordinates to search for mapped facilities.</p>:<>
  <p style={{marginTop:14,fontSize:13}}><strong>Selected area:</strong> {location.region} ({Number.isFinite(location.latitude)?location.latitude.toFixed(3):'—'}, {Number.isFinite(location.longitude)?location.longitude.toFixed(3):'—'})</p>
