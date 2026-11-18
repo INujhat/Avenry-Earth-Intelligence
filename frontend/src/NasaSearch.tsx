@@ -4,7 +4,34 @@ const LocationExplorer=lazy(()=>import('./LocationExplorer'));
 import {useState} from 'react';
 type Feature={properties?:Record<string,unknown>;geometry?:unknown};
 type SearchResult={features?:Feature[]};
-const regions=[{name:'Sylhet, Bangladesh',lat:24.89,lon:91.87},{name:'Houston, Texas',lat:29.76,lon:-95.37},{name:'New Orleans, Louisiana',lat:29.95,lon:-90.07},{name:'Kerala, India',lat:10.5,lon:76.5}];
+const regions=[
+ {name:'Sylhet, Bangladesh',lat:24.89,lon:91.87},
+ {name:'Houston, Texas, USA',lat:29.76,lon:-95.37},
+ {name:'New Orleans, Louisiana, USA',lat:29.95,lon:-90.07},
+ {name:'Kerala, India',lat:10.5,lon:76.5},
+ {name:'Dhaka, Bangladesh',lat:23.81,lon:90.41},
+ {name:'Sunamganj, Bangladesh',lat:25.07,lon:91.40},
+ {name:'Chattogram, Bangladesh',lat:22.36,lon:91.78},
+ {name:'Chicago, Illinois, USA',lat:41.88,lon:-87.63},
+ {name:'Miami, Florida, USA',lat:25.76,lon:-80.19},
+ {name:'New York City, New York, USA',lat:40.71,lon:-74.01},
+ {name:'Sacramento, California, USA',lat:38.58,lon:-121.49},
+ {name:'Richmond, Virginia, USA',lat:37.54,lon:-77.44},
+ {name:'Jakarta, Indonesia',lat:-6.21,lon:106.85},
+ {name:'Manila, Philippines',lat:14.60,lon:120.98},
+ {name:'Bangkok, Thailand',lat:13.76,lon:100.50},
+ {name:'Lahore, Pakistan',lat:31.55,lon:74.34},
+ {name:'Karachi, Pakistan',lat:24.86,lon:67.01},
+ {name:'Chennai, India',lat:13.08,lon:80.27},
+ {name:'Mumbai, India',lat:19.08,lon:72.88},
+ {name:'Nairobi, Kenya',lat:-1.29,lon:36.82},
+ {name:'Lagos, Nigeria',lat:6.52,lon:3.38},
+ {name:'Beira, Mozambique',lat:-19.84,lon:34.84},
+ {name:'Venice, Italy',lat:45.44,lon:12.33},
+ {name:'Kaiserslautern, Germany',lat:49.44,lon:7.77},
+ {name:'Brisbane, Australia',lat:-27.47,lon:153.03},
+ {name:'Porto Alegre, Brazil',lat:-30.03,lon:-51.23}
+];
 export default function NasaSearch(){
  const [region,setRegion]=useState(0),[customLat,setCustomLat]=useState(''),[customLon,setCustomLon]=useState(''),[customName,setCustomName]=useState('My location'),[start,setStart]=useState('2022-06-01'),[end,setEnd]=useState('2022-06-30');
  const [items,setItems]=useState<Feature[]>([]),[busy,setBusy]=useState(false),[error,setError]=useState(''),[searched,setSearched]=useState(false);
