@@ -15,7 +15,7 @@ export default function AIEvaluation(){
   }catch{if(live)setStatus('No independently auditable held-out evaluation report is published on this deployment.');}
  })();return()=>{live=false;};},[]);
 
- const [demo,setDemo]=useState<{tp:number;fp:number;fn:number;tn:number;total:number;pixels:Uint8ClampedArray;reference:Uint8ClampedArray}|null>(null);
+ const [demo,setDemo]=useState<{tp:number;fp:number;fn:number;tn:number;total:number}|null>(null);
  const [threshold,setThreshold]=useState(0.5);
  const [referenceFile,setReferenceFile]=useState<File|null>(null);
  const [predictionFile,setPredictionFile]=useState<File|null>(null);
@@ -23,7 +23,7 @@ export default function AIEvaluation(){
  const [comparisonError,setComparisonError]=useState('');
  const [busy,setBusy]=useState(false);
  function makeDemo(t:number){
-  const size=96;let tp=0,fp=0,fn=0,tn=0;const pixels=new Uint8ClampedArray(size*size*4),reference=new Uint8ClampedArray(size*size*4);
+  const size=96;let tp=0,fp=0,fn=0,tn=0;
   for(let y=0;y<size;y++)for(let x=0;x<size;x++){
    const river=Math.abs(x-47-11*Math.sin(y/14))<9+2*Math.cos(y/8);
    const lake=((x-28)**2/210+(y-73)**2/130)<1;
@@ -31,11 +31,8 @@ export default function AIEvaluation(){
    const score=Math.max(0,Math.min(1,0.5+(11-Math.abs(x-47-11*Math.sin(y/14)))/24+(lake?0.3:0)+0.09*Math.sin(x*1.3+y*.7)));
    const predicted=score>=t;
    if(truth&&predicted)tp++;else if(predicted)fp++;else if(truth)fn++;else tn++;
-   const i=(y*size+x)*4;
-   reference.set(truth?[36,133,192,255]:[229,235,229,255],i);
-   pixels.set(predicted?[36,133,192,255]:[229,235,229,255],i);
   }
-  setDemo({tp,fp,fn,tn,total:size*size,pixels,reference});
+  setDemo({tp,fp,fn,tn,total:size*size});
  }
  async function readMask(file:File){
   const url=URL.createObjectURL(file);
