@@ -9,8 +9,8 @@ import numpy as np
 import torch
 from torch.nn import functional as F
 
-from ml.geospatial import NORMALIZATION, metrics, normalize, read_pair
 from ml.evaluation import evaluate
+from ml.geospatial import NORMALIZATION, metrics, normalize, read_pair
 from ml.model import UNet
 
 
@@ -143,7 +143,7 @@ def train(manifest_path, output, epochs=30, seed=42, demo=False):
         held_out["model_version"] = info["version"]
         held_out["dataset_version"] = manifest["version"]
         held_out["manifest_sha256"] = digest
-        (output / "evaluation-report.json").write_text(json.dumps(held_out, indent=2) + "\\n")
+        (output / "evaluation-report.json").write_text(json.dumps(held_out, indent=2) + "\n")
     info["checkpoint_sha256"] = hashlib.sha256((output / "model.pt").read_bytes()).hexdigest()
     (output / "model.json").write_text(json.dumps(info, indent=2))
     return info
